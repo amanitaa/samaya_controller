@@ -3,8 +3,8 @@
 #include <RF24.h>
 #include <core/transmitter.h>
 
-#define CE_PIN 9
-#define CSN_PIN 10
+#define CE_PIN A2
+#define CSN_PIN A3
 
 RF24 radio(CE_PIN, CSN_PIN);
 byte counter = 0;
