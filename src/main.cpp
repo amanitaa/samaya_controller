@@ -1,7 +1,10 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include <RF24.h>
-#include "core/transmitter.h"
+#include <core/transmitter.h>
+
+#define CE_PIN 9
+#define CSN_PIN 10
 
 RF24 radio(CE_PIN, CSN_PIN);
 byte counter = 0;
@@ -12,8 +15,8 @@ void setup() {
     Serial.println("Radio initialization failed!");
     while (1);
   }
-  setupRadio(radio); // Initialize radio settings from radio.cpp
-  radio.stopListening(); // Start as transmitter
+  setupRadio(radio);
+  radio.stopListening();
   Serial.println("Transmitter initialized");
 }
 

@@ -1,6 +1,18 @@
 #include <Arduino.h>
 #include <RF24.h>
-#include "config.h"
+
+const byte TX_ADDRESS[6] = "1Node";
+const byte RX_ADDRESS[6] = "2Node";
+
+#define RF_CHANNEL 0x60
+#define RF_PA_LEVEL RF24_PA_MAX
+#define RF_DATA_RATE RF24_250KBPS
+#define RF_AUTO_ACK true
+#define RF_RETRIES_DELAY 0
+#define RF_RETRIES_COUNT 15
+#define RF_PAYLOAD_SIZE 32
+#define RF_ACK_PAYLOAD true
+
 
 void setupRadio(RF24& radio) {
   radio.setPALevel(RF_PA_LEVEL);
@@ -12,8 +24,8 @@ void setupRadio(RF24& radio) {
   if (RF_ACK_PAYLOAD) {
     radio.enableAckPayload();
   }
-  radio.openWritingPipe(TX_ADDRESS); // Send to receiver
-  radio.openReadingPipe(1, RX_ADDRESS); // Receive from receiver
+  radio.openWritingPipe(TX_ADDRESS);
+  radio.openReadingPipe(1, RX_ADDRESS);
   radio.powerUp();
 }
 
