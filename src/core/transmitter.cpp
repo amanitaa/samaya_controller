@@ -38,3 +38,11 @@ bool sendMessage(RF24& radio, const void* data, uint8_t size, byte* response) {
   }
   return false;
 }
+
+bool receiveMessage(RF24& radio, void* data, uint8_t size) {
+  if (radio.available()) {
+    radio.read(data, size);
+    return true;
+  }
+  return false;
+}
