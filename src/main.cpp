@@ -40,7 +40,7 @@ void setup() {
   pinMode(JOY_Y_PIN, INPUT);
 
   setupDisplay();
-  updateDisplay(0, 0, RF_CHANNEL, false, 0, 0);
+  updateDisplay(0, 0, 88, false, 0, 0);
 
   if (!radio.begin()) {
     Serial.println("Radio initialization failed!");
