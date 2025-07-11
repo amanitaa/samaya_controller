@@ -2,6 +2,7 @@
 #include <SPI.h>
 #include <RF24.h>
 #include "core/transmitter.h"
+#include "ui/display.h"
 
 #define CE_PIN A2
 #define CSN_PIN A3
@@ -38,6 +39,12 @@ void getMotorSpeeds(float x, float y, int16_t& left_speed, int16_t& right_speed)
 
 void setup() {
   Serial.begin(9600);
+
+  pinMode(JOY_X_PIN, INPUT);
+  pinMode(JOY_Y_PIN, INPUT);
+
+  setupDisplay();
+
   if (!radio.begin()) {
     Serial.println("Radio initialization failed!");
     while (1);
@@ -45,9 +52,6 @@ void setup() {
   setupRadio(radio);
   radio.stopListening();
   Serial.println("Transmitter initialized");
-
-  pinMode(JOY_X_PIN, INPUT);
-  pinMode(JOY_Y_PIN, INPUT);
 }
 
 void loop() {
@@ -61,6 +65,13 @@ void loop() {
   getMotorSpeeds(x, y, left_speed, right_speed);
 
   ControlPackage command = {left_speed, right_speed};
+
+  updateDisplay(
+    command.left,
+    command.right,
+    radio.getChannel(),
+    true // isUpsideDown
+  );
 
   unsigned long now = millis();
   if (command.left != lastSent.left || command.right != lastSent.right || now - lastSentTime > SEND_INTERVAL_MS) {
