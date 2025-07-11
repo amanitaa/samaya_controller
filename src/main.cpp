@@ -44,19 +44,23 @@ void setup() {
   pinMode(JOY_Y_PIN, INPUT);
 
   setupDisplay();
+  updateDisplay(0, 0, RF_CHANNEL, false);
 
   if (!radio.begin()) {
     Serial.println("Radio initialization failed!");
-    while (1);
+    updateDisplayMessage("Radio Init Failed");
+  } else {
+    setupRadio(radio);
+    radio.stopListening();
+    Serial.println("Transmitter initialized");
   }
-  setupRadio(radio);
-  radio.stopListening();
-  Serial.println("Transmitter initialized");
 }
 
 void loop() {
   static ControlPackage lastSent = {0, 0};
   static unsigned long lastSentTime = 0;
+  static bool lastUpsideDown = false;
+  static uint8_t lastChannel = RF_CHANNEL;
 
   float x = (analogRead(JOY_X_PIN) - 512.0) / 512.0;
   float y = (analogRead(JOY_Y_PIN) - 512.0) / 512.0;
@@ -66,8 +70,11 @@ void loop() {
 
   ControlPackage command = {left_speed, right_speed};
 
+  updateDisplay(command.left, command.right, lastChannel, lastUpsideDown);
+
   unsigned long now = millis();
-  if (command.left != lastSent.left || command.right != lastSent.right || now - lastSentTime > SEND_INTERVAL_MS) {
+  if (radio.isChipConnected() &&
+      (command.left != lastSent.left || command.right != lastSent.right || now - lastSentTime > SEND_INTERVAL_MS)) {
     Serial.print("Sending: L=");
     Serial.print(command.left);
     Serial.print(", R=");
@@ -76,7 +83,8 @@ void loop() {
     unsigned long last_time = micros();
     StatusPackage status = {false};
     if (sendMessage(radio, &command, sizeof(ControlPackage), &status)) {
-      updateDisplay(command.left, command.right, radio.getChannel(), status.isUpsideDown);
+      lastUpsideDown = status.isUpsideDown;
+      lastChannel = radio.getChannel();
       Serial.print(" Time: ");
       Serial.print(micros() - last_time);
       Serial.println(" microseconds");

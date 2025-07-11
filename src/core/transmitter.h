@@ -3,6 +3,8 @@
 
 #include <RF24.h>
 
+#define RF_CHANNEL 0x60
+
 struct StatusPackage {
   bool isUpsideDown;
 };
