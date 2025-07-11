@@ -4,10 +4,10 @@
 #include <SPI.h>
 #include "transmitter.h"
 
-const byte slaveAddress[5] = {'R','x','A','A','A'};
+byte controller_node[6] = "NodeA";
+byte samaya_node[6] = "NodeB";
 
 #define RF_CHANNEL 0x60
-#define RF_PA_LEVEL RF24_PA_MAX
 #define RF_DATA_RATE RF24_250KBPS
 #define RF_AUTO_ACK true
 #define RF_RETRIES_DELAY 0
@@ -17,37 +17,42 @@ const byte slaveAddress[5] = {'R','x','A','A','A'};
 
 
 void setupRadio(RF24& radio) {
-  // radio.setPALevel(RF_PA_LEVEL);
-  radio.setDataRate(RF_DATA_RATE);
-  // radio.setChannel(RF_CHANNEL);
-  // radio.setAutoAck(RF_AUTO_ACK);
-  radio.setRetries(RF_RETRIES_DELAY, RF_RETRIES_COUNT);
+  radio.begin();
+  radio.setPALevel(RF24_PA_LOW);
+  radio.openWritingPipe(samaya_node);
+  radio.openReadingPipe(1, controller_node);
+  radio.startListening();
   size_t maxPayloadSize = max(sizeof(ControlPackage), sizeof(StatusPackage));
   radio.setPayloadSize(maxPayloadSize);
-  if (RF_ACK_PAYLOAD) {
-    radio.enableAckPayload();
-  }
-  radio.openWritingPipe(slaveAddress);
-  // radio.openReadingPipe(1, RX_ADDRESS);
-  // radio.powerUp();
 }
 
 bool sendMessage(RF24& radio, const void* data, uint8_t size, StatusPackage* statusResponse) {
-  bool success = radio.write(data, size);
-  if (success && radio.available()) {
-    if (radio.isAckPayloadAvailable()) {
-      radio.read(statusResponse, sizeof(StatusPackage));
-      return true;
-    }
-    Serial.println("  Acknowledge but no data ");
-  }
-  return false;
-}
+  radio.stopListening();
 
-bool receiveMessage(RF24& radio, void* data, uint8_t size) {
-  if (radio.available()) {
-    radio.read(data, size);
+  unsigned long start_time = micros();      
+
+  if (!radio.write(data, sizeof(size))) {
+    Serial.println(F("failed"));
+  }
+
+  radio.startListening();
+
+  unsigned long started_waiting_at = micros();
+  boolean timeout = false; 
+
+  while (!radio.available()) {                            
+    if (micros() - started_waiting_at > 200000) {
+      timeout = true;
+      break;
+    }
+  }
+
+  if (timeout) {
+    Serial.println(F("Failed, response timed out."));
+    return false;
+  } else {
+    radio.read(statusResponse, sizeof(StatusPackage));
+    unsigned long end_time = micros();
     return true;
   }
-  return false;
 }

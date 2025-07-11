@@ -65,9 +65,7 @@ void loop() {
   ControlPackage command = {left_speed, right_speed};
 
   unsigned long now = millis();
-  if (radio.isChipConnected() &&
-      (command.left != lastSent.left || command.right != lastSent.right || now - lastSentTime > SEND_INTERVAL_MS)) {
-    unsigned long last_time = micros();
+  if (command.left != lastSent.left || command.right != lastSent.right || now - lastSentTime > SEND_INTERVAL_MS) {
     StatusPackage status;
     if (sendMessage(radio, &command, sizeof(ControlPackage), &status)) {
       lastSent = command;
@@ -80,14 +78,7 @@ void loop() {
         status.liionPercent,
         status.lipoPercent
       );
-    } else if (!radio.available()) {
-      Serial.print("Empty, Time: ");
-      Serial.print(micros() - last_time);
-      Serial.println(" microseconds");
-    } else {
-      Serial.println("Fail");
     }
-    Serial.println();
   }
   delay(20);
 }
