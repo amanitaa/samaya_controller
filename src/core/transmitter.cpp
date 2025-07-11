@@ -29,8 +29,6 @@ void setupRadio(RF24& radio) {
 bool sendMessage(RF24& radio, const void* data, uint8_t size, StatusPackage* statusResponse) {
   radio.stopListening();
 
-  unsigned long start_time = micros();      
-
   if (!radio.write(data, sizeof(size))) {
     Serial.println(F("failed"));
   }
@@ -52,7 +50,6 @@ bool sendMessage(RF24& radio, const void* data, uint8_t size, StatusPackage* sta
     return false;
   } else {
     radio.read(statusResponse, sizeof(StatusPackage));
-    unsigned long end_time = micros();
     return true;
   }
 }
