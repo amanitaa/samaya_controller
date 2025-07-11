@@ -66,13 +66,6 @@ void loop() {
 
   ControlPackage command = {left_speed, right_speed};
 
-  updateDisplay(
-    command.left,
-    command.right,
-    radio.getChannel(),
-    true // isUpsideDown
-  );
-
   unsigned long now = millis();
   if (command.left != lastSent.left || command.right != lastSent.right || now - lastSentTime > SEND_INTERVAL_MS) {
     Serial.print("Sending: L=");
@@ -81,10 +74,9 @@ void loop() {
     Serial.println(command.right);
 
     unsigned long last_time = micros();
-    byte gotByte;
-    if (sendMessage(radio, &command, sizeof(ControlPackage), &gotByte)) {
-      Serial.print("Answer: ");
-      Serial.print(gotByte);
+    StatusPackage status = {false};
+    if (sendMessage(radio, &command, sizeof(ControlPackage), &status)) {
+      updateDisplay(command.left, command.right, radio.getChannel(), status.isUpsideDown);
       Serial.print(" Time: ");
       Serial.print(micros() - last_time);
       Serial.println(" microseconds");

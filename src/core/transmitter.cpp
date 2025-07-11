@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <RF24.h>
+#include "transmitter.h"
 
 const byte TX_ADDRESS[6] = "1Node";
 const byte RX_ADDRESS[6] = "2Node";
@@ -29,11 +30,11 @@ void setupRadio(RF24& radio) {
   radio.powerUp();
 }
 
-bool sendMessage(RF24& radio, const void* data, uint8_t size, byte* response) {
+bool sendMessage(RF24& radio, const void* data, uint8_t size, StatusPackage* statusResponse) {
   radio.stopListening();
   bool success = radio.write(data, size);
   if (success && radio.available()) {
-    radio.read(response, 1);
+    radio.read(statusResponse, sizeof(StatusPackage));
     return true;
   }
   return false;
