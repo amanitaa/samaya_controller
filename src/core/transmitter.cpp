@@ -1,9 +1,10 @@
 #include <Arduino.h>
 #include <RF24.h>
+#include <nRF24L01.h>
+#include <SPI.h>
 #include "transmitter.h"
 
-const byte TX_ADDRESS[6] = "1Node";
-const byte RX_ADDRESS[6] = "2Node";
+const byte slaveAddress[5] = {'R','x','A','A','A'};
 
 #define RF_CHANNEL 0x60
 #define RF_PA_LEVEL RF24_PA_MAX
@@ -16,26 +17,28 @@ const byte RX_ADDRESS[6] = "2Node";
 
 
 void setupRadio(RF24& radio) {
-  radio.setPALevel(RF_PA_LEVEL);
+  // radio.setPALevel(RF_PA_LEVEL);
   radio.setDataRate(RF_DATA_RATE);
-  radio.setChannel(RF_CHANNEL);
-  radio.setAutoAck(RF_AUTO_ACK);
+  // radio.setChannel(RF_CHANNEL);
+  // radio.setAutoAck(RF_AUTO_ACK);
   radio.setRetries(RF_RETRIES_DELAY, RF_RETRIES_COUNT);
-  radio.setPayloadSize(RF_PAYLOAD_SIZE);
-  if (RF_ACK_PAYLOAD) {
-    radio.enableAckPayload();
-  }
-  radio.openWritingPipe(TX_ADDRESS);
-  radio.openReadingPipe(1, RX_ADDRESS);
-  radio.powerUp();
+  // radio.setPayloadSize(RF_PAYLOAD_SIZE);
+  // if (RF_ACK_PAYLOAD) {
+    // radio.enableAckPayload();
+  // }
+  radio.openWritingPipe(slaveAddress);
+  // radio.openReadingPipe(1, RX_ADDRESS);
+  // radio.powerUp();
 }
 
 bool sendMessage(RF24& radio, const void* data, uint8_t size, StatusPackage* statusResponse) {
-  radio.stopListening();
   bool success = radio.write(data, size);
   if (success && radio.available()) {
-    radio.read(statusResponse, sizeof(StatusPackage));
-    return true;
+    if (radio.isAckPayloadAvailable()) {
+      radio.read(statusResponse, sizeof(StatusPackage));
+      return true;
+    }
+    Serial.println("  Acknowledge but no data ");
   }
   return false;
 }
