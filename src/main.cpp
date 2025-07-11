@@ -16,10 +16,6 @@
 
 RF24 radio(CE_PIN, CSN_PIN);
 
-struct ControlPackage {
-  int16_t left;
-  int16_t right;
-};
 
 void getMotorSpeeds(float x, float y, int16_t& left_speed, int16_t& right_speed) {
   if (abs(x) < DEADZONE) x = 0;
@@ -44,7 +40,7 @@ void setup() {
   pinMode(JOY_Y_PIN, INPUT);
 
   setupDisplay();
-  updateDisplay(0, 0, RF_CHANNEL, false);
+  updateDisplay(0, 0, RF_CHANNEL, false, 0, 0);
 
   if (!radio.begin()) {
     Serial.println("Radio initialization failed!");
@@ -59,8 +55,6 @@ void setup() {
 void loop() {
   static ControlPackage lastSent = {0, 0};
   static unsigned long lastSentTime = 0;
-  static bool lastUpsideDown = false;
-  static uint8_t lastChannel = RF_CHANNEL;
 
   float x = (analogRead(JOY_X_PIN) - 512.0) / 512.0;
   float y = (analogRead(JOY_Y_PIN) - 512.0) / 512.0;
@@ -70,26 +64,22 @@ void loop() {
 
   ControlPackage command = {left_speed, right_speed};
 
-  updateDisplay(command.left, command.right, lastChannel, lastUpsideDown);
-
   unsigned long now = millis();
   if (radio.isChipConnected() &&
       (command.left != lastSent.left || command.right != lastSent.right || now - lastSentTime > SEND_INTERVAL_MS)) {
-    Serial.print("Sending: L=");
-    Serial.print(command.left);
-    Serial.print(", R=");
-    Serial.println(command.right);
-
     unsigned long last_time = micros();
-    StatusPackage status = {false};
+    StatusPackage status;
     if (sendMessage(radio, &command, sizeof(ControlPackage), &status)) {
-      lastUpsideDown = status.isUpsideDown;
-      lastChannel = radio.getChannel();
-      Serial.print(" Time: ");
-      Serial.print(micros() - last_time);
-      Serial.println(" microseconds");
       lastSent = command;
       lastSentTime = now;
+      updateDisplay(
+        command.left,
+        command.right,
+        radio.getChannel(),
+        status.isUpsideDown,
+        status.liionPercent,
+        status.lipoPercent
+      );
     } else if (!radio.available()) {
       Serial.print("Empty, Time: ");
       Serial.print(micros() - last_time);
@@ -99,6 +89,5 @@ void loop() {
     }
     Serial.println();
   }
-
   delay(20);
 }

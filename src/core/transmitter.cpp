@@ -22,10 +22,11 @@ void setupRadio(RF24& radio) {
   // radio.setChannel(RF_CHANNEL);
   // radio.setAutoAck(RF_AUTO_ACK);
   radio.setRetries(RF_RETRIES_DELAY, RF_RETRIES_COUNT);
-  // radio.setPayloadSize(RF_PAYLOAD_SIZE);
-  // if (RF_ACK_PAYLOAD) {
-    // radio.enableAckPayload();
-  // }
+  size_t maxPayloadSize = max(sizeof(ControlPackage), sizeof(StatusPackage));
+  radio.setPayloadSize(maxPayloadSize);
+  if (RF_ACK_PAYLOAD) {
+    radio.enableAckPayload();
+  }
   radio.openWritingPipe(slaveAddress);
   // radio.openReadingPipe(1, RX_ADDRESS);
   // radio.powerUp();

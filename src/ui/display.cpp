@@ -40,7 +40,7 @@ void setupDisplay() {
   display.display();
 }
 
-void updateDisplay(int16_t leftSpeed, int16_t rightSpeed, uint8_t channel, bool isUpsideDown) {
+void updateDisplay(int16_t leftSpeed, int16_t rightSpeed, uint8_t channel, bool isUpsideDown, uint8_t liionPercent, uint8_t lipoPercent) {
   display.clearDisplay();
   
   display.setTextSize(1);
@@ -64,10 +64,14 @@ void updateDisplay(int16_t leftSpeed, int16_t rightSpeed, uint8_t channel, bool 
 
   display.setCursor(2, 36);
   display.print("Weapon: 55");
+
   display.setCursor(2, 44);
-  display.print("Li-ion: 90");
+  sprintf(buf, "Li-ion: %d", liionPercent);
+  display.print(buf);
+
   display.setCursor(2, 52);
-  display.print("Lipo: 75");
+  sprintf(buf, "Lipo: %d", lipoPercent);
+  display.print(buf);
   
   display.drawRect(0, 0, 128, 17, WHITE);
   display.drawLine(21, 0, 21, 15, WHITE);

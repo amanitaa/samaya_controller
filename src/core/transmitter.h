@@ -6,7 +6,14 @@
 #define RF_CHANNEL 0x60
 
 struct StatusPackage {
-  bool isUpsideDown;
+    bool isUpsideDown;
+    uint8_t liionPercent;
+    uint8_t lipoPercent;
+};
+
+struct ControlPackage {
+  int16_t left;
+  int16_t right;
 };
 
 void setupRadio(RF24& radio);
