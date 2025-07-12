@@ -10,7 +10,7 @@
 #define JOY_X_PIN A0
 #define JOY_Y_PIN A1
 
-#define DEADZONE 0.1
+#define DEADZONE 0.2
 #define MAX_SPEED 255
 #define SEND_INTERVAL_MS 300
 
@@ -21,7 +21,7 @@ void getMotorSpeeds(float x, float y, int16_t& left_speed, int16_t& right_speed)
   if (abs(x) < DEADZONE) x = 0;
   if (abs(y) < DEADZONE) y = 0;
 
-  y = -y;
+  x = -x;
 
   float left = y + x;
   float right = y - x;

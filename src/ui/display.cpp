@@ -57,9 +57,8 @@ void updateDisplay(int16_t leftSpeed, int16_t rightSpeed, uint8_t channel, bool 
   sprintf(buf, "Channel: %d", channel);
   display.print(buf);
 
-  int move = (abs(leftSpeed) + abs(rightSpeed)) / 2;
   display.setCursor(2, 28);
-  sprintf(buf, "Move: %d", move);
+  sprintf(buf, "Move: L%d R%d", abs(leftSpeed), abs(rightSpeed));
   display.print(buf);
 
   display.setCursor(2, 36);
@@ -77,9 +76,9 @@ void updateDisplay(int16_t leftSpeed, int16_t rightSpeed, uint8_t channel, bool 
   display.drawLine(21, 0, 21, 15, WHITE);
   
   if (isUpsideDown) {
-    display.drawXBitmap(88, 26, image_download_1_flipped_bits, 25, 27, WHITE);
+    display.drawXBitmap(100, 26, image_download_1_flipped_bits, 25, 27, WHITE);
   } else {
-    display.drawXBitmap(88, 26, image_download_1_bits, 25, 27, WHITE);
+    display.drawXBitmap(100, 26, image_download_1_bits, 25, 27, WHITE);
   }
 
   display.display();
