@@ -24,34 +24,9 @@ void setupRadio(RF24& radio) {
   radio.openWritingPipe(samaya_node);
   radio.openReadingPipe(1, controller_node);
   radio.startListening();
-  size_t maxPayloadSize = max(sizeof(ControlPackage), sizeof(StatusPackage));
-  radio.setPayloadSize(maxPayloadSize);
+  radio.setPayloadSize(32);
 }
 
-bool sendMessage(RF24& radio, const void* data, uint8_t size, StatusPackage* statusResponse) {
-  radio.stopListening();
+bool sendMessage(RF24& radio, const char* data, uint8_t size, StatusPackage* statusResponse) {
 
-  if (!radio.write(data, sizeof(size))) {
-    Serial.println(F("failed"));
-  }
-
-  radio.startListening();
-
-  unsigned long started_waiting_at = micros();
-  boolean timeout = false; 
-
-  while (!radio.available()) {                            
-    if (micros() - started_waiting_at > 200000) {
-      timeout = true;
-      break;
-    }
-  }
-
-  if (timeout) {
-    Serial.println(F("Failed, response timed out."));
-    return false;
-  } else {
-    radio.read(statusResponse, sizeof(StatusPackage));
-    return true;
-  }
 }

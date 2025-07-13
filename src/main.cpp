@@ -14,6 +14,9 @@
 #define MAX_SPEED 255
 #define SEND_INTERVAL_MS 300
 
+int16_t lastSentLeft = 0;
+int16_t lastSentRight = 0;
+
 RF24 radio(CE_PIN, CSN_PIN);
 
 
@@ -53,26 +56,48 @@ void setup() {
 }
 
 void loop() {
-  static ControlPackage lastSent = {0, 0};
   static unsigned long lastSentTime = 0;
 
   float x = (analogRead(JOY_X_PIN) - 512.0) / 512.0;
   float y = (analogRead(JOY_Y_PIN) - 512.0) / 512.0;
 
-  int16_t left_speed, right_speed;
-  getMotorSpeeds(x, y, left_speed, right_speed);
+  int16_t currentLeftSpeed, currentRightSpeed;
+  getMotorSpeeds(x, y, currentLeftSpeed, currentRightSpeed);
 
-  ControlPackage command = {left_speed, right_speed};
-
+  StatusPackage status;
   unsigned long now = millis();
-  if (command.left != lastSent.left || command.right != lastSent.right || now - lastSentTime > SEND_INTERVAL_MS) {
-    StatusPackage status;
-    if (sendMessage(radio, &command, sizeof(ControlPackage), &status)) {
-      lastSent = command;
+  if (currentLeftSpeed != lastSentLeft || currentRightSpeed != lastSentRight || now - lastSentTime > SEND_INTERVAL_MS) {
+    char dataString[16];
+    snprintf(dataString, sizeof(dataString), "L%dR%d", currentLeftSpeed, currentRightSpeed);
+
+    radio.stopListening();
+
+    if (!radio.write(&dataString, sizeof(dataString))) {
+      Serial.println(F("Failed"));
+    }
+
+    radio.startListening();
+
+    unsigned long started_waiting_at = micros();
+    boolean timeout = false; 
+
+    while (!radio.available()) {                            
+      if (micros() - started_waiting_at > 200000) {
+        timeout = true;
+        break;
+      }
+    }
+
+    if (timeout) {
+      Serial.println(F("Failed, response timed out."));
+    } else {
+      radio.read(&status, sizeof(StatusPackage));
+      lastSentLeft = currentLeftSpeed;
+      lastSentRight = currentRightSpeed;
       lastSentTime = now;
       updateDisplay(
-        command.left,
-        command.right,
+        currentLeftSpeed,
+        currentRightSpeed,
         radio.getChannel(),
         status.isUpsideDown,
         status.liionPercent,

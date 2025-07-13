@@ -15,6 +15,6 @@ struct ControlPackage {
 };
 
 void setupRadio(RF24& radio);
-bool sendMessage(RF24& radio, const void* data, uint8_t size, StatusPackage* statusResponse);
+bool sendMessage(RF24& radio, const char* data, uint8_t size, StatusPackage* statusResponse);
 
 #endif
