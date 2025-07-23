@@ -19,7 +19,8 @@ const uint8_t channel = 88;
 
 void setupRadio(RF24& radio) {
   radio.begin();
-  radio.setPALevel(RF24_PA_LOW);
+  radio.setPALevel(RF24_PA_MAX);
+  radio.setDataRate(RF_DATA_RATE);
   radio.setChannel(channel);
   radio.openWritingPipe(samaya_node);
   radio.openReadingPipe(1, controller_node);

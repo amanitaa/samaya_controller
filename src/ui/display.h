@@ -12,7 +12,7 @@
 extern Adafruit_SSD1306 display;
 
 void setupDisplay();
-void updateDisplay(int16_t leftSpeed, int16_t rightSpeed, uint8_t channel, bool isUpsideDown, uint8_t liionPercent, uint8_t lipoPercent);
+void updateDisplay(int16_t leftSpeed, int16_t rightSpeed, uint8_t channel, bool isUpsideDown, uint8_t liionPercent, uint8_t lipoPercent, int lastSentPercent);
 void updateDisplayMessage(const char* message);
 
 #endif
