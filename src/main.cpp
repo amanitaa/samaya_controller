@@ -15,6 +15,8 @@
 #define BUTTON_75 4
 #define BUTTON_100 5
 
+#define BUTTON_CALIBRATE 8
+
 #define DEADZONE 0.2
 #define MAX_SPEED 255
 #define SEND_INTERVAL_MS 300
@@ -52,6 +54,7 @@ void setup() {
   pinMode(BUTTON_100, INPUT_PULLUP);
   pinMode(JOY_X_PIN, INPUT);
   pinMode(JOY_Y_PIN, INPUT);
+  pinMode(BUTTON_CALIBRATE, INPUT_PULLUP);
 
   setupDisplay();
   updateDisplay(0, 0, 88, false, 0, 0, 0);
@@ -76,6 +79,7 @@ void loop() {
   getMotorSpeeds(x, y, currentLeftSpeed, currentRightSpeed);
 
   int currentPercentage = -1;
+  int calibrateState = 0;
   if (digitalRead(BUTTON_STOP) == LOW) {
     currentPercentage = 0;
   } else if (digitalRead(BUTTON_25) == LOW) {
@@ -88,6 +92,10 @@ void loop() {
     currentPercentage = 100;
   }
 
+  if (digitalRead(BUTTON_CALIBRATE) == LOW) {
+    calibrateState = 1;
+  }
+
   if (currentPercentage == -1) {
     currentPercentage = lastSentPercentage >= 0 ? lastSentPercentage : 0;
   }
@@ -95,8 +103,9 @@ void loop() {
   unsigned long now = millis();
   if (currentLeftSpeed != lastSentLeft || currentRightSpeed != lastSentRight ||
       currentPercentage != lastSentPercentage || now - lastSentTime > SEND_INTERVAL_MS) {
-    char dataString[20];
-    snprintf(dataString, sizeof(dataString), "L%dR%dB%d", currentLeftSpeed, currentRightSpeed, currentPercentage);
+    char dataString[50];
+    snprintf(dataString, sizeof(dataString), "L%dR%dB%dC%d", currentLeftSpeed, currentRightSpeed, currentPercentage, calibrateState);
+    calibrateState = 0;
     Serial.print("Sending: ");
     Serial.println(dataString);
     radio.stopListening();
