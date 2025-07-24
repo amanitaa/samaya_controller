@@ -83,11 +83,11 @@ void loop() {
   if (digitalRead(BUTTON_STOP) == LOW) {
     currentPercentage = 0;
   } else if (digitalRead(BUTTON_25) == LOW) {
-    currentPercentage = 25;
+    currentPercentage = 10;
   } else if (digitalRead(BUTTON_50) == LOW) {
-    currentPercentage = 50;
+    currentPercentage = 20;
   } else if (digitalRead(BUTTON_75) == LOW) {
-    currentPercentage = 75;
+    currentPercentage = 40;
   } else if (digitalRead(BUTTON_100) == LOW) {
     currentPercentage = 100;
   }
